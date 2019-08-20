@@ -156,6 +156,65 @@ contract Owned {
 
 }
 
+// ----------------------------------------------------------------------------
+
+// Tokenlock contract
+
+// ----------------------------------------------------------------------------
+contract Tokenlock is Owned {
+    
+    uint8 isLocked = 0;       //flag indicates if token is locked
+
+    event Freezed();
+    event UnFreezed();
+
+    modifier validLock {
+        require(isLocked == 0);
+        _;
+    }
+    
+    function freeze() public onlyOwner {
+        isLocked = 1;
+        
+        emit Freezed();
+    }
+
+    function unfreeze() public onlyOwner {
+        isLocked = 0;
+        
+        emit UnFreezed();
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+// Limit users in blacklist
+
+// ----------------------------------------------------------------------------
+contract UserLock is Owned {
+    
+    mapping(address => bool) blacklist;
+        
+    event LockUser(address indexed who);
+    event UnlockUser(address indexed who);
+
+    modifier permissionCheck {
+        require(!blacklist[msg.sender]);
+        _;
+    }
+    
+    function lockUser(address who) public onlyOwner {
+        blacklist[who] = true;
+        
+        emit LockUser(who);
+    }
+
+    function unlockUser(address who) public onlyOwner {
+        blacklist[who] = false;
+        
+        emit UnlockUser(who);
+    }
+}
 
 
 // ----------------------------------------------------------------------------
@@ -166,7 +225,7 @@ contract Owned {
 
 // ----------------------------------------------------------------------------
 
-contract SwipeToken is ERC20Interface, Owned {
+contract SwipeToken is ERC20Interface, Tokenlock, UserLock {
 
     using SafeMath for uint;
 
@@ -248,7 +307,7 @@ contract SwipeToken is ERC20Interface, Owned {
 
     // ------------------------------------------------------------------------
 
-    function transfer(address to, uint tokens) public returns (bool success) {
+    function transfer(address to, uint tokens) public validLock permissionCheck returns (bool success) {
 
         balances[msg.sender] = balances[msg.sender].sub(tokens);
 
@@ -278,7 +337,7 @@ contract SwipeToken is ERC20Interface, Owned {
 
     // ------------------------------------------------------------------------
 
-    function approve(address spender, uint tokens) public returns (bool success) {
+    function approve(address spender, uint tokens) public validLock permissionCheck returns (bool success) {
 
         allowed[msg.sender][spender] = tokens;
 
@@ -308,7 +367,7 @@ contract SwipeToken is ERC20Interface, Owned {
 
     // ------------------------------------------------------------------------
 
-    function transferFrom(address from, address to, uint tokens) public returns (bool success) {
+    function transferFrom(address from, address to, uint tokens) public validLock permissionCheck returns (bool success) {
 
         balances[from] = balances[from].sub(tokens);
 
@@ -351,7 +410,7 @@ contract SwipeToken is ERC20Interface, Owned {
      // - `account` must have at least `amount` tokens.
      
      // ------------------------------------------------------------------------
-    function burn(uint256 value) public returns (bool success) {
+    function burn(uint256 value) public validLock permissionCheck returns (bool success) {
         require(msg.sender != address(0), "ERC20: burn from the zero address");
 
         _totalSupply = _totalSupply.sub(value);
@@ -370,7 +429,7 @@ contract SwipeToken is ERC20Interface, Owned {
 
     // ------------------------------------------------------------------------
 
-    function approveAndCall(address spender, uint tokens, bytes memory data) public returns (bool success) {
+    function approveAndCall(address spender, uint tokens, bytes memory data) public validLock permissionCheck returns (bool success) {
 
         allowed[msg.sender][spender] = tokens;
 
