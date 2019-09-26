@@ -26,9 +26,9 @@ contract Ownable {
 
         _;
     }
-    
+
     modifier onlyOwner {
-        require(msg.sender == owner || msg.sender == admin);
+        require(msg.sender == owner);
 
         _;
     }
@@ -60,7 +60,7 @@ contract SwipeOracle is Ownable {
     uint networkFee = 80;
     uint oracleFee = 20;
     uint activationFee = 1000000000000000000;
-    
+
     constructor() public {
     }
 
