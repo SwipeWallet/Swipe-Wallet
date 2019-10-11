@@ -75,7 +75,7 @@ contract Ownable {
     // Set Admin
 
     // ----------------------------------------------------------------------------
-    function setAdmin(address newAdmin) public onlyAdmin {
+    function setAdmin(address newAdmin) public onlyOwner {
         admin = newAdmin;
     }
 
@@ -86,17 +86,20 @@ contract Ownable {
 contract SwipeOracle is Ownable {
     using SafeMath for uint;
 
+    SwipeToken public token;
+
     uint networkFee = 80;
     uint oracleFee = 20;
     uint activationFee = 1000000000000000000;
-
+    uint protocolRate = 100;
 
     // ----------------------------------------------------------------------------
 
     // Constructor
 
     // ----------------------------------------------------------------------------
-    constructor() public {
+    constructor(address payable _token) public {
+        token = SwipeToken(_token);
     }
 
 
@@ -157,5 +160,55 @@ contract SwipeOracle is Ownable {
     // ----------------------------------------------------------------------------
     function setActivationFee(uint fee) public onlyAdmin {
         activationFee = fee;
+    }
+
+    function viewProtocolRate() public view returns(uint) {
+        return protocolRate;
+    }
+
+    function setProtocolRate(uint rate) public onlyAdmin {
+        protocolRate = rate;
+    }
+
+    function getBalance() public view returns(uint) {
+        return token.balanceOf(address(this));
+    }
+
+    function buySXP(address to, uint amount) public onlyAdmin returns (bool success) {
+        require(getBalance() >= amount, 'not enough reserve balance');
+
+        if (token.transfer(to, amount)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function buySXPMultiple(address[] memory to, uint[] memory amount) public onlyAdmin returns (bool success) {
+        uint total = 0;
+        for (uint i = 0; i < amount.length; i ++) {
+            total = total.add(amount[i]);
+        }
+
+        require(getBalance() >= total, 'not enough reserve balance');
+
+        for (uint j = 0; j < to.length; j ++) {
+            require(to[j] != address(0), 'invalid address');
+            if (!token.transfer(to[j], amount[j])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function rewardSXP(address to, uint amount) public onlyAdmin returns (bool success) {
+        require(getBalance() >= amount, 'not enough reserve balance');
+
+        if (token.transfer(to, amount)) {
+            return true;
+        }
+
+        return false;
     }
 }

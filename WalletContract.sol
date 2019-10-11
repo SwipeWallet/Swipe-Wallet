@@ -291,4 +291,14 @@ contract WalletContract is StateLock {
 
         return false;
     }
+
+    function sellSXP(uint amount) public onlyOwner returns (bool success) {
+        require(getBalance() >= amount, 'not enough balance');
+
+        if (token.transfer(address(swipeOracle), amount)) {
+            return true;
+        }
+
+        return false;
+    }
 }
