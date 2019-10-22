@@ -48,13 +48,13 @@ contract StateLock is Owned {
     // - expireTimes : Locked Card Expire Time Array
 
     // ----------------------------------------------------------------------------
-    function viewLocked() public view returns(uint count, uint[] memory ids, uint[] memory amounts, uint[] memory expireTimes) {
+    function viewLocked() external view returns(uint count, uint[] memory ids, uint[] memory amounts, uint[] memory expireTimes) {
         count = lockData.length;
         ids = new uint[](count);
         amounts = new uint[](count);
         expireTimes = new uint[](count);
 
-        for (uint i = 0; i < lockData.length; i ++) {
+        for (uint i = 0; i < count; i ++) {
             ids[i] = lockData[i].id;
             amounts[i] = lockData[i].amount;
             expireTimes[i] = lockData[i].releaseTime;
@@ -74,8 +74,6 @@ contract StateLock is Owned {
         for (uint i = 0; i < lockData.length; i ++) {
             amount = amount.add(lockData[i].amount);
         }
-
-        return amount;
     }
 
 
@@ -188,7 +186,7 @@ contract WalletContract is StateLock {
     // - oracle : Swipe Oracle Contract Address
 
     // ----------------------------------------------------------------------------
-    function setOracle(address oracle) public onlyOwner {
+    function setOracle(address oracle) external onlyOwner {
         swipeOracle = SwipeOracle(oracle);
     }
 
@@ -198,7 +196,7 @@ contract WalletContract is StateLock {
     // Activate Wallet Contract With Activation Fee By Owner
 
     // ----------------------------------------------------------------------------
-    function activateSXP() public onlyOwner {
+    function activateSXP() external onlyOwner {
         uint activationFee = swipeOracle.viewActivationFee();
         require(getBalance() >= activationFee, 'not enough balance');
 
@@ -215,7 +213,7 @@ contract WalletContract is StateLock {
     // Deactivate Wallet Contract And Withdraw Activation Fee SXP To Owner
 
     // ----------------------------------------------------------------------------
-    function deactivateSXP() public onlyOwner returns (bool success) {
+    function deactivateSXP() external onlyOwner returns (bool success) {
         require(activated == true, 'user is not activated');
         require(lockedSXP > 0, 'there is no activation fee');
 
@@ -243,7 +241,7 @@ contract WalletContract is StateLock {
     // Get Network Fee
 
     // ----------------------------------------------------------------------------
-    function networkFee() public view returns(uint) {
+    function networkFee() external view returns(uint) {
         return swipeOracle.viewNetworkFee();
     }
 
@@ -257,8 +255,9 @@ contract WalletContract is StateLock {
     // - tokenAmount: Amount To Withdraw
 
     // ----------------------------------------------------------------------------
-    function transferSXP(address to, uint tokenAmount) public onlyOwner returns (bool success) {
+    function transferSXP(address to, uint tokenAmount) external onlyOwner returns (bool success) {
         require(activated == true, 'user is not activated');
+        require(to != address(0), 'external address is zero');
         require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()), 'not enough balance');
 
         if (token.transfer(to, tokenAmount)) {
@@ -276,7 +275,7 @@ contract WalletContract is StateLock {
     // - tokenAmount: Amount To Transact
 
     // ----------------------------------------------------------------------------
-    function transactionSXP(uint tokenAmount) public onlyOwner returns (bool success) {
+    function transactionSXP(uint tokenAmount) external onlyOwner returns (bool success) {
         require(activated == true, 'user is not activated');
         require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()), 'not enough balance');
 
@@ -292,7 +291,7 @@ contract WalletContract is StateLock {
         return false;
     }
 
-    function sellSXP(uint amount) public onlyOwner returns (bool success) {
+    function sellSXP(uint amount) external onlyOwner returns (bool success) {
         require(getBalance() >= amount, 'not enough balance');
 
         if (token.transfer(address(swipeOracle), amount)) {

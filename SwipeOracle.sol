@@ -44,7 +44,7 @@ contract Ownable {
     // Get Owner Address
 
     // ----------------------------------------------------------------------------
-    function viewOwner() public view returns(address) {
+    function viewOwner() external view returns(address) {
         return owner;
     }
 
@@ -54,7 +54,7 @@ contract Ownable {
     // Set Owner
 
     // ----------------------------------------------------------------------------
-    function setOwner(address newOwner) public onlyOwner {
+    function setOwner(address newOwner) external onlyOwner {
         owner = newOwner;
         emit OwnershipTransferred(owner, newOwner);
     }
@@ -65,7 +65,7 @@ contract Ownable {
     // Get Admin Address
 
     // ----------------------------------------------------------------------------
-    function viewAdmin() public view returns(address) {
+    function viewAdmin() external view returns(address) {
         return admin;
     }
 
@@ -75,7 +75,7 @@ contract Ownable {
     // Set Admin
 
     // ----------------------------------------------------------------------------
-    function setAdmin(address newAdmin) public onlyOwner {
+    function setAdmin(address newAdmin) external onlyOwner {
         admin = newAdmin;
     }
 
@@ -108,7 +108,7 @@ contract SwipeOracle is Ownable {
     // Get Network Fee
 
     // ----------------------------------------------------------------------------
-    function viewNetworkFee() public view returns(uint) {
+    function viewNetworkFee() external view returns(uint) {
         return networkFee;
     }
 
@@ -118,7 +118,7 @@ contract SwipeOracle is Ownable {
     // Set Network Fee
 
     // ----------------------------------------------------------------------------
-    function setNetworkFee(uint fee) public onlyAdmin {
+    function setNetworkFee(uint fee) external onlyAdmin {
         networkFee = fee;
     }
 
@@ -128,7 +128,7 @@ contract SwipeOracle is Ownable {
     // Get Oracle Fee
 
     // ----------------------------------------------------------------------------
-    function viewOracleFee() public view returns(uint) {
+    function viewOracleFee() external view returns(uint) {
         return oracleFee;
     }
 
@@ -138,7 +138,7 @@ contract SwipeOracle is Ownable {
     // Set Oracle Fee
 
     // ----------------------------------------------------------------------------
-    function setOracleFee(uint fee) public onlyAdmin {
+    function setOracleFee(uint fee) external onlyAdmin {
         oracleFee = fee;
     }
 
@@ -148,7 +148,7 @@ contract SwipeOracle is Ownable {
     // Get Activation Fee
 
     // ----------------------------------------------------------------------------
-    function viewActivationFee() public view returns(uint) {
+    function viewActivationFee() external view returns(uint) {
         return activationFee;
     }
 
@@ -158,15 +158,15 @@ contract SwipeOracle is Ownable {
     // Set Activation Fee
 
     // ----------------------------------------------------------------------------
-    function setActivationFee(uint fee) public onlyAdmin {
+    function setActivationFee(uint fee) external onlyAdmin {
         activationFee = fee;
     }
 
-    function viewProtocolRate() public view returns(uint) {
+    function viewProtocolRate() external view returns(uint) {
         return protocolRate;
     }
 
-    function setProtocolRate(uint rate) public onlyAdmin {
+    function setProtocolRate(uint rate) external onlyAdmin {
         protocolRate = rate;
     }
 
@@ -174,7 +174,7 @@ contract SwipeOracle is Ownable {
         return token.balanceOf(address(this));
     }
 
-    function buySXP(address to, uint amount) public onlyAdmin returns (bool success) {
+    function buySXP(address to, uint amount) external onlyAdmin returns (bool success) {
         require(getBalance() >= amount, 'not enough reserve balance');
 
         if (token.transfer(to, amount)) {
@@ -202,7 +202,7 @@ contract SwipeOracle is Ownable {
         return true;
     }
 
-    function rewardSXP(address to, uint amount) public onlyAdmin returns (bool success) {
+    function rewardSXP(address to, uint amount) external onlyAdmin returns (bool success) {
         require(getBalance() >= amount, 'not enough reserve balance');
 
         if (token.transfer(to, amount)) {
