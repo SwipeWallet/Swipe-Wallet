@@ -256,11 +256,13 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function transferSXP(address to, uint tokenAmount) external onlyOwner returns (bool success) {
+        uint transferFee = swipeOracle.viewTrsansferFee();
         require(activated == true, 'user is not activated');
         require(to != address(0), 'external address is zero');
-        require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()), 'not enough balance');
+        require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()).add(transferFee), 'not enough balance');
 
         if (token.transfer(to, tokenAmount)) {
+            token.transfer(owner, transferFee);
             return true;
         }
 

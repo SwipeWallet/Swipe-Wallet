@@ -88,6 +88,7 @@ contract SwipeOracle is Ownable {
 
     SwipeToken public token;
 
+    uint transferFee = 1000000000000000000;
     uint networkFee = 80;
     uint oracleFee = 20;
     uint activationFee = 1000000000000000000;
@@ -102,6 +103,24 @@ contract SwipeOracle is Ownable {
         token = SwipeToken(_token);
     }
 
+    // ----------------------------------------------------------------------------
+
+    // Get Transfer Fee
+
+    // ----------------------------------------------------------------------------
+    function viewTrsansferFee() external view returns(uint) {
+        return transferFee;
+    }
+
+
+    // ----------------------------------------------------------------------------
+
+    // Set Transfer Fee
+
+    // ----------------------------------------------------------------------------
+    function setTransferFee(uint fee) external onlyAdmin {
+        transferFee = fee;
+    }
 
     // ----------------------------------------------------------------------------
 
