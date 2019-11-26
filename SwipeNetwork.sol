@@ -83,7 +83,7 @@ contract Ownable {
 
 
 
-contract SwipeOracle is Ownable {
+contract SwipeNetwork is Ownable {
     using SafeMath for uint;
 
     SwipeToken public token;
