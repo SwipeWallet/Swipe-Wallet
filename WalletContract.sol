@@ -156,7 +156,7 @@ contract WalletContract is StateLock {
     SwipeToken public token;
 
     // Swipe Network Instance
-    SwipeNetwork public swipeNetwork;
+    SwipeNetwork public swipeOracle;
 
     bool public activated = false;
     uint lockedSXP = 0;
@@ -175,7 +175,7 @@ contract WalletContract is StateLock {
     // ----------------------------------------------------------------------------
     constructor(address payable _token, address network) public {
         token = SwipeToken(_token);
-        swipeNetwork = SwipeNetwork(network);
+        swipeOracle = SwipeNetwork(network);
     }
 
 
@@ -187,7 +187,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function setNetwork(address network) external onlyOwner {
-        swipeNetwork = SwipeNetwork(network);
+        swipeOracle = SwipeNetwork(network);
     }
 
 
@@ -197,7 +197,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function activateSXP() external onlyOwner {
-        uint activationFee = swipeNetwork.viewActivationFee();
+        uint activationFee = swipeOracle.viewActivationFee();
         require(getBalance() >= activationFee, 'not enough balance');
 
         activated = true;
@@ -228,11 +228,11 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
 
-    // Get Wallet Contract SXP Balance
+    // Get Wallet Contract SXP Available Balance
 
     // ----------------------------------------------------------------------------
     function getBalance() public view returns(uint) {
-        return token.balanceOf(address(this));
+        return token.balanceOf(address(this)).sub(lockedSXP);
     }
 
 
@@ -242,7 +242,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function networkFee() external view returns(uint) {
-        return swipeNetwork.viewNetworkFee();
+        return swipeOracle.viewNetworkFee();
     }
 
 
@@ -256,7 +256,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function transferSXP(address to, uint tokenAmount) external onlyOwner returns (bool success) {
-        uint transferFee = swipeNetwork.viewTrsansferFee();
+        uint transferFee = swipeOracle.viewTrsansferFee();
         require(activated == true, 'user is not activated');
         require(to != address(0), 'external address is zero');
         require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()).add(transferFee), 'not enough balance');
@@ -272,7 +272,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
 
-    // Transaction SXP Token With Network Fee And Network Fee
+    // Transaction SXP Token With Network Fee And Oracle Fee
 
     // - tokenAmount: Amount To Transact
 
@@ -281,10 +281,10 @@ contract WalletContract is StateLock {
         require(activated == true, 'user is not activated');
         require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()), 'not enough balance');
 
-        uint netFee = swipeNetwork.viewNetworkFee();
-        uint networkFee = swipeNetwork.viewNetworkFee();
+        uint netFee = swipeOracle.viewNetworkFee();
+        uint oracleFee = swipeOracle.viewOracleFee();
         uint burnAmount = tokenAmount.mul(netFee).div(100);
-        uint fee = tokenAmount.mul(networkFee).div(100);
+        uint fee = tokenAmount.mul(oracleFee).div(100);
         if (token.burn(burnAmount)) {
             token.transfer(owner, fee);
             return true;
@@ -296,7 +296,7 @@ contract WalletContract is StateLock {
     function sellSXP(uint amount) external onlyOwner returns (bool success) {
         require(getBalance() >= amount, 'not enough balance');
 
-        if (token.transfer(address(swipeNetwork), amount)) {
+        if (token.transfer(address(swipeOracle), amount)) {
             return true;
         }
 
