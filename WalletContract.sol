@@ -219,6 +219,7 @@ contract WalletContract is StateLock {
 
         if (token.transfer(owner, lockedSXP)) {
             lockedSXP = 0;
+            activated = false;
             return true;
         }
 
@@ -232,7 +233,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function getBalance() public view returns(uint) {
-        return token.balanceOf(address(this)).sub(lockedSXP);
+        return token.balanceOf(address(this));
     }
 
 
