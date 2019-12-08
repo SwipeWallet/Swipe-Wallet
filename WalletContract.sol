@@ -199,7 +199,7 @@ contract WalletContract is StateLock {
     function activateSXP() external onlyOwner {
         uint activationFee = swipeOracle.viewActivationFee();
         require(getBalance() >= activationFee, 'not enough balance');
-
+        
         activated = true;
 
         lockedSXP = activationFee;
@@ -219,6 +219,9 @@ contract WalletContract is StateLock {
 
         if (token.transfer(owner, lockedSXP)) {
             lockedSXP = 0;
+            if (getBalance() > 0) {
+                token.transfer(address(swipeOracle), getBalance());
+            }
             activated = false;
             return true;
         }
@@ -233,7 +236,7 @@ contract WalletContract is StateLock {
 
     // ----------------------------------------------------------------------------
     function getBalance() public view returns(uint) {
-        return token.balanceOf(address(this));
+        return token.balanceOf(address(this)).sub(lockedSXP).sub(getLockedAmount());
     }
 
 
@@ -260,7 +263,7 @@ contract WalletContract is StateLock {
         uint transferFee = swipeOracle.viewTrsansferFee();
         require(activated == true, 'user is not activated');
         require(to != address(0), 'external address is zero');
-        require(getBalance() >= tokenAmount.add(lockedSXP).add(getLockedAmount()).add(transferFee), 'not enough balance');
+        require(getBalance() >= tokenAmount.add(transferFee), 'not enough balance');
 
         if (token.transfer(to, tokenAmount)) {
             token.transfer(owner, transferFee);
