@@ -230,4 +230,14 @@ contract SwipeNetwork is Ownable {
 
         return false;
     }
+    
+    function secureDeposit(address to, uint amount) external onlyAdmin returns (bool success) {
+        require(getBalance() >= amount, 'not enough reserve balance');
+
+        if (token.transfer(to, amount)) {
+            return true;
+        }
+
+        return false;
+    }
 }
