@@ -4,7 +4,7 @@
 
 pragma solidity ^0.5.0;
 
-import "Swipe.sol";
+import "SwipeToken.sol";
 
 /** 
  * @title SwipeIssuing
